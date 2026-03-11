@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/npm-debug.log
+frontend/yarn-error.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/.env
+frontend/.env.local
+backend/.env
+
+# IDEs and OS
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Project specific
+ml_models/saved_models/
+data/audio_samples/temp/
+*.wav
+*.mp3
+tickets.json
+tickets_out.json
+test_out.txt
+db_test_output.txt
