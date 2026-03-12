@@ -223,6 +223,7 @@ def decide_action(
 
     # 2) If we already confirmed earlier, just submit
     if collected_fields.get("confirmed"):
+        collected_fields["ticket_status"] = "NEW"
         if ticket_id:
             spelled = spell_out(ticket_id)
             next_question = (
@@ -301,6 +302,7 @@ def decide_action(
     # 4) Handle confirmation answers (only meaningful in confirmation mode)
     if mode == "confirmation" and confirm_result == "yes":
         collected_fields["confirmed"] = True
+        collected_fields["ticket_status"] = "NEW"
 
         if ticket_id:
             spelled = spell_out(ticket_id)
@@ -385,6 +387,7 @@ def decide_action(
         }
 
     # Fallback for any other edge cases: submit if everything looks complete
+    collected_fields["ticket_status"] = "NEW"
     if ticket_id:
         spelled = spell_out(ticket_id)
         next_question = (

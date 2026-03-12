@@ -3,7 +3,8 @@ import { apiFetch } from "./client";
 
 // Adjust endpoints when backend is ready.
 export async function fetchTickets() {
-  return await apiFetch("/tickets", { method: "GET" });
+  const data = await apiFetch("/tickets", { method: "GET" });
+  return data?.tickets || data || [];
 }
 
 export async function updateTicket(ticketId, patch) {

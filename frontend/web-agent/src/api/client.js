@@ -1,6 +1,6 @@
 // src/api/client.js
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim(); // e.g. "http://localhost:5000"
+const API_BASE = "http://127.0.0.1:8311/INSIGHT311API";
 
 /**
  * Reads response body safely (json OR text). Returns:
@@ -47,7 +47,9 @@ export async function apiFetch(path, options = {}) {
     throw new Error("API base URL not set (VITE_API_BASE_URL).");
   }
 
-  const url = `${API_BASE}${path}`;
+  const urlObj = new URL(`${API_BASE}${path}`);
+  urlObj.searchParams.set("apikey", "test123");
+  const url = urlObj.toString();
 
   let res;
   try {

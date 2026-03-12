@@ -382,8 +382,6 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
 
     initTicketSequence(1);
 
-    const apiBase = String(import.meta?.env?.VITE_API_BASE_URL || "").trim();
-
     const normalizedMock = (getStoredTickets() || []).map((t, idx) =>
       normalizeTicket(t, idx % 2 === 0 ? "Jerry" : "Tom")
     );
@@ -396,17 +394,11 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
     );
     ensureSequenceAtLeast(maxFromMock + 1);
 
-    if (!apiBase) {
-      setTickets(normalizedMock);
-      setStoredTickets(normalizedMock);
-      setTicketsError("");
-      setLastRefreshedAt(new Date());
-      setLoadingTickets(false);
-      return;
-    }
-
     try {
+      console.log("[INSIGHT-DEBUG] Fetching tickets from API...");
       const apiTickets = await fetchTickets();
+      console.log("[INSIGHT-DEBUG] API returned", apiTickets?.length, "tickets");
+      console.log("[INSIGHT-DEBUG] First ticket:", JSON.stringify(apiTickets?.[0]?.ticket_id));
 
       const normalizedApi = (apiTickets || []).map((t, idx) =>
         normalizeTicket(t, idx % 2 === 0 ? "Jerry" : "Tom")
@@ -420,11 +412,12 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
       );
       ensureSequenceAtLeast(Math.max(maxFromMock, maxFromApi) + 1);
 
+      console.log("[INSIGHT-DEBUG] Setting", normalizedApi.length, "normalized tickets");
       setTickets(normalizedApi);
       setStoredTickets(normalizedApi);
       setTicketsError("");
     } catch (e) {
-      console.warn("[Mock mode] fetchTickets failed:", e);
+      console.warn("[INSIGHT-DEBUG] fetchTickets FAILED:", e?.message || e);
       setTickets(normalizedMock);
       setTicketsError("");
     } finally {
@@ -878,7 +871,11 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
 
       const supervisorSeesAllBotOnly = isSupervisor && isPureVoiceBotTicket(t);
 
-      return involved || supervisorSeesAllBotOnly;
+      // Include tickets sourced from the live backend DB (they carry a ticket_id
+      // field like "TKT-..." that frontend-created tickets never have)
+      const isBackendTicket = !!t?.ticket_id;
+
+      return involved || supervisorSeesAllBotOnly || isBackendTicket;
     });
 
     switch (queueFilter) {
@@ -917,7 +914,10 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
             // ✅ Supervisor must also see bot-only tickets in counts (otherwise everything shows 0)
             const supervisorSeesAllBotOnly = isSupervisor && isPureVoiceBotTicket(t);
 
-            return involved || supervisorSeesAllBotOnly;
+            // Include backend DB tickets (voice channel without frontend ownership fields)
+            const isBackendTicket = !!t?.ticket_id;
+
+            return involved || supervisorSeesAllBotOnly || isBackendTicket;
           })
         : roleVisibleTickets || [];
 

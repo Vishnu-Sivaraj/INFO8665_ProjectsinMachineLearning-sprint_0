@@ -6,18 +6,21 @@
 
 ## 🏗️ System Architecture
 
-The project consists of three primary layers that work in synchronization:
+The project has been restructured into a Monorepo containing the following components:
 
-### 1. **API Service** (`src/api/ml_service.py`)
+### 1. **Backend API Service** (`backend/src/api/ml_service.py`)
 * A Flask-based backend that manages the lifecycle of a call.
 * Exposes endpoints for NLU processing, orchestration logic, and STT/TTS integration.
 
-### 2. **Dialog Orchestrator** (`src/ai_orchestration/orchestrator.py`)
+### 2. **Dialog Orchestrator** (`backend/src/ai_orchestration/orchestrator.py`)
 * Acts as the "Brain" of the conversation using slot-filling techniques.
 * Manages required fields: `category`, `location`, `description`, `caller_name`, and `phone_number`.
 * Implements confidence-based logic to handle clarifications and final ticket submission.
 
-### 3. **Call Simulation Engine** (`scripts/test_call.py`)
+### 3. **React Web UI** (`frontend/web-agent/`)
+* A Vite + React web portal for agents to view incoming 311 tickets and listen to the recorded calls.
+
+### 4. **Call Simulation Engine** (`backend/tests/test_call.py`)
 * A CLI utility that simulates a real-world phone interaction.
 * Captures user voice input, displays real-time NLU confidence scores, and executes orchestrated responses.
 
@@ -40,6 +43,12 @@ source .venv/activate
 pip install -r requirements.txt
 ```
 
+### **Environment Configuration (Mandatory)**
+Because database credentials are intentionally excluded from version control, you must create a `.env` file in the **root** of the project before running:
+```env
+NEON_DB_URL="postgresql://<username>:<password>@<host>/neondb?sslmode=require"
+```
+
 ### **NLU Model Training (Mandatory)**
 Model artifacts are local and ignored by Git. You must train the DistilBERT classifier before first use:
 
@@ -49,24 +58,30 @@ Model artifacts are local and ignored by Git. You must train the DistilBERT clas
    cd scripts
    python train_nlu_model.py
    ```
+   ```
 3. Artifacts will be saved to `ml_models/saved_models/category_classifier/`.
 
 ---
 
 ## 🛠️ Usage Guide
 
-To run the full simulation, you need two terminal windows:
+To run the full simulation, you need to start both local servers and the CLI script:
 
 ### **Terminal 1: The API Server**
 ```bash
-python src/api/ml_service.py
+python backend/src/api/ml_service.py
 ```
-*Wait until you see: "✓ ML classifier loaded successfully"*
 
-### **Terminal 2: The Call Simulator**
+### **Terminal 2: The React Web Dashboard**
 ```bash
-cd scripts
-python test_call.py
+cd frontend/web-agent
+npm install
+npm run dev
+```
+
+### **Terminal 3: Demo the Voicebot (CLI)**
+```bash
+python backend/tests/test_call.py
 ```
 
 ---
