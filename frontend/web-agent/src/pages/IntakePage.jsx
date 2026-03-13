@@ -400,9 +400,13 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
       console.log("[INSIGHT-DEBUG] API returned", apiTickets?.length, "tickets");
       console.log("[INSIGHT-DEBUG] First ticket:", JSON.stringify(apiTickets?.[0]?.ticket_id));
 
-      const normalizedApi = (apiTickets || []).map((t, idx) =>
-        normalizeTicket(t, idx % 2 === 0 ? "Jerry" : "Tom")
-      );
+      const sessionOwner = localStorage.getItem("userName") || "Jerry";
+      const normalizedApi = (apiTickets || []).map((t) => {
+        // Backend DB tickets: assign the current session user as fallback owner
+        // so they appear in the operator's own queue (Mine/All Active views).
+        const isDbTicket = String(t?.ticket_id || t?.ticketNumber || "").startsWith("TKT-");
+        return normalizeTicket(t, isDbTicket ? sessionOwner : "Jerry");
+      });
 
       const maxFromApi = Math.max(
         0,
@@ -413,6 +417,10 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
       ensureSequenceAtLeast(Math.max(maxFromMock, maxFromApi) + 1);
 
       console.log("[INSIGHT-DEBUG] Setting", normalizedApi.length, "normalized tickets");
+      if (normalizedApi[0]) {
+        const t0 = normalizedApi[0];
+        console.log("[INSIGHT-DEBUG] ticket[0] createdByType:", t0.createdByType, "handledByType:", t0.handledByType, "ticket_id:", t0.ticket_id, "status:", t0.status);
+      }
       setTickets(normalizedApi);
       setStoredTickets(normalizedApi);
       setTicketsError("");
@@ -803,7 +811,9 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
 
   const roleVisibleTickets = useMemo(() => {
     if (sessionRoleUpper !== "SUPERVISOR") {
-      return tickets.filter((t) => !isPureVoiceBotTicket(t));
+      // Always include live backend DB tickets (ticket_id = "TKT-...") — they
+      // are voice-bot sourced but operators are the intended reviewers.
+      return tickets.filter((t) => !isPureVoiceBotTicket(t) || !!t?.ticket_id);
     }
     return tickets;
   }, [tickets, sessionRoleUpper]);
@@ -871,11 +881,15 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
 
       const supervisorSeesAllBotOnly = isSupervisor && isPureVoiceBotTicket(t);
 
-      // Include tickets sourced from the live backend DB (they carry a ticket_id
-      // field like "TKT-..." that frontend-created tickets never have)
-      const isBackendTicket = !!t?.ticket_id;
+      // Include tickets sourced from the live backend DB — identified by
+      // ticketNumber starting with "TKT-" (always preserved after normalization)
+      const isBackendTicket = String(t?.ticketNumber || t?.ticket_id || "").startsWith("TKT-");
 
-      return involved || supervisorSeesAllBotOnly || isBackendTicket;
+      const passes = involved || supervisorSeesAllBotOnly || isBackendTicket;
+      if (t?.category === "litter" || String(t?.ticketNumber || "").includes("1A91")) {
+        console.log("[LANE-FILTER] litter ticket:", t?.ticketNumber, "involved:", involved, "isBackendTicket:", isBackendTicket, "passes:", passes, "handledByName:", t?.handledByName, "sessionName:", sessionName);
+      }
+      return passes;
     });
 
     switch (queueFilter) {
@@ -914,8 +928,8 @@ export default function IntakePage({ activeView: routeActiveView, view = "myWork
             // ✅ Supervisor must also see bot-only tickets in counts (otherwise everything shows 0)
             const supervisorSeesAllBotOnly = isSupervisor && isPureVoiceBotTicket(t);
 
-            // Include backend DB tickets (voice channel without frontend ownership fields)
-            const isBackendTicket = !!t?.ticket_id;
+            // Include backend DB tickets — identified by ticketNumber starting with "TKT-"
+            const isBackendTicket = String(t?.ticketNumber || t?.ticket_id || "").startsWith("TKT-");
 
             return involved || supervisorSeesAllBotOnly || isBackendTicket;
           })
