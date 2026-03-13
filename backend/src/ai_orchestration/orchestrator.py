@@ -197,6 +197,18 @@ def decide_action(
                         collected_fields["_category_conf"] = new_conf
                 continue
 
+            # Description: only update if not already set, or if new value is clearly better
+            # (i.e. contains real words, not just digits/spaces from a phone number turn)
+            if field == "description":
+                existing = collected_fields.get("description", "")
+                if value:
+                    # A "digit-only" string is a phone number transcript, not a real description
+                    stripped = value.replace(" ", "").replace("-", "")
+                    is_just_digits = stripped.isdigit()
+                    if not existing or (not is_just_digits and len(value) > len(existing)):
+                        collected_fields[field] = value
+                continue
+
             # Other fields: always update to stay in sync with NLU's tracked state
             if value:
                 collected_fields[field] = value
