@@ -1,0 +1,48 @@
+# ============================================================
+# INSIGHT-311 — Full Stack Docker Compose
+# ============================================================
+# Usage:
+#   docker compose up --build        (first time / after code changes)
+#   docker compose up                (restart without rebuilding)
+#   docker compose down              (stop everything)
+#   docker compose logs -f backend   (watch backend logs)
+#
+# Prerequisites:
+#   - Docker Desktop installed
+#   - .env file at project root with NEON_DB_URL
+# ============================================================
+
+services:
+  # ────────────────────────────────────────────
+  # Flask Backend — ML API on port 8311
+  # ────────────────────────────────────────────
+  backend:
+    build:
+      context: .                    # repo root (needs requirements.txt, backend/, data/, ml_models/)
+      dockerfile: backend/Dockerfile
+    container_name: insight311-backend
+    ports:
+      - "8311:8311"
+    env_file:
+      - .env                        # injects NEON_DB_URL at runtime (never baked into image)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8311/INSIGHT311API/tickets?apikey=test123')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ────────────────────────────────────────────
+  # React Frontend — Operator Dashboard on port 5173
+  # ────────────────────────────────────────────
+  frontend:
+    build:
+      context: frontend/web-agent
+      dockerfile: Dockerfile
+    container_name: insight311-frontend
+    ports:
+      - "5173:80"                   # Nginx inside container listens on 80 → exposed as 5173
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped

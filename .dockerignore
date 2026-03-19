@@ -1,0 +1,21 @@
+# Don't send these to Docker build context
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+.github/
+node_modules/
+frontend/web-agent/node_modules/
+frontend/web-agent/dist/
+*.wav
+*.mp3
+.env
+.env.*
+notebooks/
+docs/
+*.egg-info/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
