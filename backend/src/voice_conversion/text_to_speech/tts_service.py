@@ -1,11 +1,18 @@
 # src/voice_conversion/text_to_speech/tts_service.py
 
-import pyttsx3
+try:
+    import pyttsx3
+except ImportError:
+    pyttsx3 = None  # Not available in Docker (Windows-only TTS engine)
 import threading
 
 
 def _speak(text: str):
     """Internal TTS engine runner (thread-safe)."""
+    if pyttsx3 is None:
+        print(f"  🔊 TTS (no engine): {text}")
+        return
+
     engine = pyttsx3.init()
 
     # Default speaking rate

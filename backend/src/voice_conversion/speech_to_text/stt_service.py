@@ -2,7 +2,10 @@
 # STT Service — Records mic audio and transcribes using local Whisper model
 
 import whisper
-import sounddevice as sd
+try:
+    import sounddevice as sd
+except (ImportError, OSError):
+    sd = None  # Not available in Docker (no microphone / PortAudio)
 import soundfile as sf
 import numpy as np
 import re

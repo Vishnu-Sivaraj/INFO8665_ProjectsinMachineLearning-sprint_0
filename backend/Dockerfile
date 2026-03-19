@@ -16,8 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy and install Python dependencies first (Docker layer caching)
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Uses requirements-docker.txt which excludes Windows-only packages
+COPY requirements-docker.txt /app/requirements-docker.txt
+RUN pip install --no-cache-dir -r requirements-docker.txt
 
 # Download the spaCy NLP model
 RUN python -m spacy download en_core_web_md

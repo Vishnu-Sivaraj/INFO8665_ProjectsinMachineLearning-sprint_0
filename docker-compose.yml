@@ -25,6 +25,8 @@ services:
       - "8311:8311"
     env_file:
       - .env                        # injects NEON_DB_URL at runtime (never baked into image)
+    environment:
+      - FLASK_HOST=0.0.0.0          # bind to all interfaces for Docker port forwarding
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8311/INSIGHT311API/tickets?apikey=test123')"]

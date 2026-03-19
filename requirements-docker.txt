@@ -1,0 +1,39 @@
+# INSIGHT-311 Backend Dependencies (Docker / Linux)
+# Excludes Windows-only packages: pypiwin32, pywin32, pyttsx3, sounddevice
+
+# Web framework
+Flask==3.1.3
+flask-cors==6.0.0
+Flask-RESTful==0.3.10
+
+# Database
+psycopg2-binary==2.9.11
+
+# ML / NLP
+scikit-learn>=1.4
+spacy==3.8.11
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+
+# Deep Learning (Whisper STT)
+torch>=2.0
+openai-whisper>=20231117
+tiktoken>=0.5
+transformers>=4.30
+huggingface_hub>=0.20
+
+# NLP support
+vaderSentiment==3.3.2
+thefuzz==0.22.1
+RapidFuzz==3.14.3
+
+# Audio
+soundfile==0.13.1
+
+# Utils
+python-dotenv>=1.0
+requests>=2.31
+numpy>=1.24
+tqdm>=4.65
+PyYAML>=6.0
+regex>=2023.0

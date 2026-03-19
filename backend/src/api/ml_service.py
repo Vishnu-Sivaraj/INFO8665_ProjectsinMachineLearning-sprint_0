@@ -461,5 +461,6 @@ api.add_resource(RecordingResource,    f"{BASE}/recordings/<string:recording_id>
 
 
 if __name__ == "__main__":
-    print("INSIGHT311 NLU Service running on port 8311")
-    app.run(port=8311, debug=False)
+    host = os.environ.get("FLASK_HOST", "127.0.0.1")  # 0.0.0.0 in Docker
+    print(f"INSIGHT311 NLU Service running on {host}:8311")
+    app.run(host=host, port=8311, debug=False)

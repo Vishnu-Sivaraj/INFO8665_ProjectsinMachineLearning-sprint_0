@@ -1,11 +1,17 @@
 # Don't send these to Docker build context
 .venv/
+.venv/**
 venv/
+venv/**
 __pycache__/
+**/__pycache__/
 *.pyc
 .git/
+.git/**
 .github/
+.github/**
 node_modules/
+**/node_modules/
 frontend/web-agent/node_modules/
 frontend/web-agent/dist/
 *.wav
@@ -13,9 +19,12 @@ frontend/web-agent/dist/
 .env
 .env.*
 notebooks/
+notebooks/**
 docs/
+docs/**
 *.egg-info/
 .vscode/
 .idea/
 Thumbs.db
 .DS_Store
+*.whl
